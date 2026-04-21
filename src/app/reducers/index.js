@@ -1,40 +1,36 @@
-
-import { applyMiddleware, combineReducers, createStore } from "redux";
-import { persistReducer, persistStore } from "redux-persist";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { applyMiddleware, combineReducers, legacy_createStore as createStore } from 'redux';
+import { persistReducer, persistStore } from 'redux-persist';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import createSagaMiddleware from 'redux-saga';
 
-import auth from '../reducers/auth';
+import auth from './auth';
 
-//config
+// config
 const sagaMiddleware = createSagaMiddleware();
+
 const rootPersistConfig = {
   key: 'root',
   storage: AsyncStorage,
   blacklist: ['auth'],
-
 };
 
 const authPersistConfig = {
   key: 'auth',
   storage: AsyncStorage,
   blacklist: [],
-
 };
-//setup for reducers
 
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, auth),
-
 });
 
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);
 
-export default () => {
+export default function createAppStore() {
+  const store = createStore(persistedReducer, applyMiddleware(sagaMiddleware));
+  const persistor = persistStore(store);
+  const runSaga = sagaMiddleware.run;
 
-    let store = createStore(persistedReducer, applyMiddleware(sagaMiddleware)) ;
-    let persistor = persistStore(store);
-    let runSaga = sagaMiddleware.run;
+  return { store, persistor, runSaga };
+}
 
-    return {store, persistor, runSaga};
-};
