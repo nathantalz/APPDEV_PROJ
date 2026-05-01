@@ -1,206 +1,176 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-  Image,
-  StatusBar,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
-
+import { authLogin } from '../../app/reducers/auth';
+import IMG from '../../utils/images';
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import { _signInwithGoogle } from '../../utils/firebase';
 import CustomTextInput from '../../components/CustomTextinput';
 import CustomButton from '../../components/CustomButton';
 import { ROUTES } from '../../utils';
-// reducer exports default; keep this import pointing at typed module resolution
-import { authLogin } from '../../app/reducers/auth';
-import IMG from '../../utils/images';
 
-const FOX_THEME = {
-  orange: '#E67E22',
-  dark: '#2C3E50',
-  light: '#ECF0F1',
-  accent: '#D35400',
-} as const;
-
-type AuthState = {
-  data: unknown;
-  isLoading: boolean;
-  isError: boolean;
-  error?: string | null;
-};
 
 const Login: React.FC = () => {
-  const insets = useSafeAreaInsets();
-  const navigations = useNavigation();
-  const dispatch = useDispatch();
-  const auth = useSelector((state: { auth: AuthState }) => state.auth);
 
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+const [username, setUsername] = useState<string | number>('');
+const [password, setPassword] = useState<string>('');
 
-  useEffect(() => {
-    if (!auth.isLoading && auth.isError && auth.error) {
-      Alert.alert('Login failed', auth.error);
+const {isLoading, data, isError, error} = useSelector(
+  (state:
+    {auth: {
+      isLoading: boolean,
+      isError: boolean,
+      error: string | null,
+      data:
+      {token: string
+        user:
+        {
+          username: string,
+          email: string,
+          roles: string[],
+          verified: boolean,
+        }
+      }
+    }}) =>
+      state.auth);
+
+
+
+      // status: boolean,
+      //   message: string,
+      //   data:{
+      //     id: number,
+      //     username: number | string,
+      //     name: string,
+      //     data: {
+      //       math: number,
+      //     }
+      //   }
+
+const navigations = useNavigation();
+const dispatch = useDispatch();
+
+
+useEffect(() => {
+    if (!isLoading && isError && error){
+        Alert.alert('Login failed', error);
     }
-  }, [auth.isLoading, auth.isError, auth.error]);
+},
+    [isLoading, isError, error]);
 
-  const handleLogin = () => {
-    if (username === '' || password === '') {
-      Alert.alert(
-        'Invalid Credentials',
-        'Please enter valid username and password',
-      );
-      return;
-    }
-
-    dispatch(
-      authLogin({
-        username: username,
-        password: password,
-      }),
-    );
-  };
 
   return (
-    <View
-      style={[
-        styles.mainContainer,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
-      ]}
-    >
-      <StatusBar barStyle="dark-content" />
+    <View style={{
+     flex: 1,
+     padding: 20,
+     alignItems: 'center',
+     justifyContent: 'center' }}>
 
-      <View style={styles.headerSection}>
-        <Image
-          // IMG is a URL string here; RN accepts { uri } sources
-          source={{ uri: IMG.LOGO2 }}
-          style={styles.logo}
-          resizeMode="contain"
+      {/* <Text>Email Address: {emailAdd}</Text>
+      <Text>Password: {password}</Text> */}
+
+      <Image
+            source={IMG.LOGO2}
+            style={{ width: 240, height: 80, marginBottom: 40 }}
+            resizeMode="contain"
         />
-        <Text style={styles.welcomeText}>Welcome Back!</Text>
-        <Text style={styles.subText}>Login to your Sly account</Text>
-      </View>
+     <View style={{
+      width: '100%',
+      }}>
 
-      <View style={styles.formSection}>
-        <CustomTextInput
-          label={'Username'}
-          placeholder={'Enter Username'}
-          value={(val: string) => setUsername(val)}
-          containerStyle={styles.inputContainer}
-          textStyle={styles.inputText}
-        />
 
-        <CustomTextInput
-          label={'Password'}
-          placeholder={'Enter Password'}
-          value={(val: string) => setPassword(val)}
-          secureTextEntry={true}
-          containerStyle={styles.inputContainer}
-          textStyle={styles.inputText}
-        />
 
-        <CustomButton
-          label={'LOG IN'}
-          containerStyle={styles.loginButton}
-          textsStyle={styles.loginButtonText}
-          onPress={handleLogin}
-        />
-      </View>
+      <CustomTextInput label={'Username'} 
+      placeholder={'Enter Username'} 
+      value={(val: string | number) => setUsername(val)}
+      containerStyle={{ 
+        padding: 10,
+      }}
+      textStyle={{ borderRadius: 10, color: 'black', marginLeft: 15}} />
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>New to the pack?</Text>
-        <TouchableOpacity
-          // @ts-expect-error react-navigation typing added later
-          onPress={() => navigations.navigate(ROUTES.REGISTER)}
-        >
-          <Text style={styles.registerLink}> Register Now </Text>
-        </TouchableOpacity>
+      <CustomTextInput label={'Password'}
+       placeholder={'Enter Password'}
+       value={(val: string | number) => setPassword(val as string)}
+       containerStyle={{ 
+        padding: 10,
+
+      }}
+      textStyle={{ borderRadius: 10, 
+        color: 'red', 
+        marginLeft: 15}}
+       />
+     </View>
+
+      <CustomButton label={'LOG IN'} 
+      containerStyle={{   
+      borderWidth:1, 
+      borderRadius: 10,
+      marginVertical: 20,
+      backgroundColor: 'blue',
+      width: '85%',
+
+      }} 
+      textsStyle={{ color: 'white', 
+        fontWeight: 'bold'}}
+
+      onPress={() => {
+        if (username === '' || password === '') {
+          Alert.alert(
+            'Invalid Credentials', 
+            'Please enter valid username and password');
+
+            return;
+        }
+
+        dispatch(authLogin({
+          username: username,
+          password: password,
+        }));
+
+      }}
+       />
+
+       <GoogleSigninButton
+        //  style={{ width: 212, height: 48 }}
+         size={GoogleSigninButton.Size.Wide}
+         color={GoogleSigninButton.Color.Dark}
+         onPress={async () => {
+          try {
+            const result = await _signInwithGoogle();
+            if (result?.userInfo) {
+              Alert.alert('Success', 'Google Sign-In successful');
+            } else if (result?.message) {
+              Alert.alert('Google Sign-In', result.message);
+            }
+            console.log(result);
+          } catch (err: any) {
+            Alert.alert('Error', err?.message ? String(err.message) : 'Google Sign-In failed');
+          }
+        }}
+       />
+
+
+       <View style={{
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',}}>
+
+
+        <Text> Create an Account </Text>
+
+         <TouchableOpacity onPress={() => navigations.navigate(ROUTES.REGISTER)}>
+
+          <Text style={{color: 'red',
+             fontWeight: 'bold',
+             marginLeft: 10,
+             }}> Register </Text>   
+
+        </TouchableOpacity> 
+
       </View>
     </View>
-  );
-};
+  )
+}
 
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    backgroundColor: FOX_THEME.light,
-    paddingHorizontal: 25,
-    justifyContent: 'center',
-  },
-  headerSection: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logo: {
-    width: 150,
-    height: 100,
-    marginBottom: 10,
-  },
-  welcomeText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: FOX_THEME.dark,
-  },
-  subText: {
-    fontSize: 16,
-    color: '#7F8C8D',
-    marginTop: 5,
-  },
-  formSection: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  inputContainer: {
-    marginBottom: 15,
-  },
-  inputText: {
-    borderRadius: 12,
-    borderColor: '#DCDCDC',
-    borderWidth: 1,
-    paddingHorizontal: 15,
-    color: 'black',
-    height: 50,
-  },
-  loginButton: {
-    backgroundColor: FOX_THEME.orange,
-    height: 55,
-    borderRadius: 12,
-    marginTop: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loginButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  footerText: {
-    color: FOX_THEME.dark,
-    fontSize: 15,
-  },
-  registerLink: {
-    color: FOX_THEME.accent,
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-});
-
-export default Login;
-
+export default Login
