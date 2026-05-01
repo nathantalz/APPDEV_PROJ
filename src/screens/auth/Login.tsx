@@ -6,6 +6,7 @@ import { authLogin } from '../../app/reducers/auth';
 import IMG from '../../utils/images';
 import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import { _signInwithGoogle } from '../../utils/firebase';
+import { showError, showInfo, showSuccess } from '../../components/alertMessage';
 import CustomTextInput from '../../components/CustomTextinput';
 import CustomButton from '../../components/CustomButton';
 import { ROUTES } from '../../utils';
@@ -136,17 +137,22 @@ useEffect(() => {
          size={GoogleSigninButton.Size.Wide}
          color={GoogleSigninButton.Color.Dark}
          onPress={async () => {
-          try {
-            const result = await _signInwithGoogle();
-            if (result?.userInfo) {
-              Alert.alert('Success', 'Google Sign-In successful');
-            } else if (result?.message) {
-              Alert.alert('Google Sign-In', result.message);
-            }
-            console.log(result);
-          } catch (err: any) {
-            Alert.alert('Error', err?.message ? String(err.message) : 'Google Sign-In failed');
-          }
+          // await _signInwithGoogle().then((result) =>{
+          //   console.log(result);
+          // })
+          // .catch((err) => {
+          //   Alert.alert('Error', `${err.message}`);
+          // }).finally(() => {
+          //   Alert.alert('Success', 'Google Sign-In successful');
+          // });
+
+          showError({
+            title: 'Google Sign-In',
+             message: 'Google Sign-In process initiated',
+             position: 'top',
+            //  position: 'bottom',
+             visibilityTime: 3000,
+            });
         }}
        />
 

@@ -1,29 +1,35 @@
 import React from 'react';
+import { View } from 'react-native';
+
+import AppNav from './src/navigations';
+
+import rootSaga from './src/app/sagas';
+import configureStore from './src/app/reducers';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
-import createStore from './src/app/reducers';
-import rootSaga from './src/app/sagas';
-import Navigation from './src/navigations';
+import alertConfig from './src/components/alertMessage/config';
+import Toast from 'react-native-toast-message';
 
-const isJest = typeof process !== 'undefined' && !!process.env.JEST_WORKER_ID;
 
-const { store, persistor, runSaga } = createStore();
-if (!isJest) {
-  runSaga(rootSaga);
-}
+const {store, persistor, runSaga} = configureStore();
+runSaga(rootSaga);
 
-export default function App() {
+
+
+
+const App = () => {
   return (
-    <Provider store={store}>
-      {isJest ? (
-        <Navigation />
-      ) : (
-        <PersistGate loading={null} persistor={persistor}>
-          <Navigation />
-        </PersistGate>
-      )}
-    </Provider>
-  );
-}
+    <Provider store={store} >
+      <PersistGate loading={null} persistor={persistor}>
+        <View style={{ flex: 1 }}>
+          <AppNav/>
 
+          <Toast config={alertConfig}/>
+        </View>
+      </PersistGate>
+       </Provider>
+  );
+};
+
+export default App;
