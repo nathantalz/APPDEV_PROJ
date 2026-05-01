@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { authLogin } from '../../app/reducers/auth';
 import IMG from '../../utils/images';
 import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
-import { _signInwithGoogle } from '../../utils/firebase';
-import { showError, showInfo, showSuccess } from '../../components/alertMessage';
+import { showError } from '../../components/alertMessage';
 import CustomTextInput from '../../components/CustomTextinput';
 import CustomButton from '../../components/CustomButton';
 import { ROUTES } from '../../utils';
@@ -55,7 +54,12 @@ const dispatch = useDispatch();
 
 useEffect(() => {
     if (!isLoading && isError && error){
-        Alert.alert('Login failed', error);
+        showError({
+          title: 'Login failed',
+          message: error,
+          position: 'top',
+          visibilityTime: 3000,
+        });
     }
 },
     [isLoading, isError, error]);
@@ -117,9 +121,12 @@ useEffect(() => {
 
       onPress={() => {
         if (username === '' || password === '') {
-          Alert.alert(
-            'Invalid Credentials', 
-            'Please enter valid username and password');
+          showError({
+            title: 'Invalid Credentials',
+            message: 'Please enter valid username and password',
+            position: 'top',
+            visibilityTime: 3000,
+          });
 
             return;
         }
